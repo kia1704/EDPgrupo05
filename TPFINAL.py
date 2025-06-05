@@ -1,67 +1,155 @@
 class Vehiculos:
-    def _init_(self, velocidad, capacidad,costofijo,costoporkm, costoporkg,tipo,modo):
-        self.velocidad=velocidad
-        self.capacidad=capacidad
-        self.costofijo=costofijo
-        self.costoporkm=costoporkm
-        self.costoporkg=costoporkg
-        self.tipo=tipo
-        self.modo=modo
+    def __init__(self,nombre, velocidad, capacidad, costofijo, costoporkm, costoporkg):
+        self.nombre = nombre
+        self.velocidad = velocidad
+        self.capacidad = capacidad
+        self.costofijo = costofijo
+        self.costoporkm = costoporkm
+        self.costoporkg = costoporkg
+        
+    def get_nombre(self):
+        return self.nombre
 
-    def calcular_costo(self,distancia,carga,cantidad_vehiculos):
-        return cantidad_vehiculos*(self.costofijo + self.costoporkm * distancia + self.costoporkg *carga)
+    def set_nombre(self, nombre):
+        self.nombre = nombre
+    
+    def get_velocidad(self):
+        return self.velocidad
+
+    def get_capacidad(self):
+        return self.capacidad
+
+    def get_costofijo(self):
+        return self.costofijo
+
+    def get_costoporkm(self):
+        return self.costoporkm
+
+    def get_costoporkg(self):
+        return self.costoporkg
+
+    def set_velocidad(self, velocidad):
+        self.velocidad = velocidad
+
+    def set_capacidad(self, capacidad):
+        self.capacidad = capacidad
+
+    def set_costofijo(self, costofijo):
+        self.costofijo = costofijo
+
+    def set_costoporkm(self, costoporkm):
+        self.costoporkm = costoporkm
+
+    def set_costoporkg(self, costoporkg):
+        self.costoporkg = costoporkg
+
    
-    def calcular_tiempo(self,distancia):
+    def calcular_costo(self, distancia, carga):
+        return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
+
+    def calcular_tiempo(self, distancia):
         return distancia / self.velocidad
+
     
 class Nodos:
-    def _init_(self,nombre ):
+    nodos_existentes={}
+    def __init__(self,nombre ):
         self.nombre=nombre
-        self.conexiones= set()
-        
-    def agregar_conexion(self, conexion):
-        self.conexiones.add(conexion)
+    @classmethod
+    def agregar_nodo(cls,nodo):
+        if nodo.nombre not in cls.nodos_existentes:
+            cls.nodos_existentes[nodo.nombre] = nodo
+        else:
+            raise Exception("El nodo ya existe")
+       
         
 class Conexiones:
-    def _init_(self, nodo_origen, nodo_destino, modo, distancia, restriccion):
+    Conexiones_existentes:{}
+    def __init__(self, nodo_origen, nodo_destino, distancia, restriccion,valor_de_restriccion): # el tipo, restriccion y valor de restriccion  chequear porque hay dos formas de hacerlo
         self.distancia=distancia
-        self.origen = nodo_origen
+        self.origen = nodo_origen 
         self.destino = nodo_destino
-        self.modo = modo
         self.distancia = distancia
         self.restriccion = restriccion
+        self.valor_de_restriccion= valor_de_restriccion
+    
+    @classmethod
+    def agregar_conexion(cls, conexion):
+        cls.Conexion_existentes[conexion.nodo_origen]= []
 
 
 class Camion(Vehiculos):
-    def _init_(self):
-        super()._init_(nombre= "Camion", modo='automotor', velocidad=80, capacidad=30000, costo_fijo=30, costo_km=5, costo_kg=1)
+    def __init__(self):
+        self.costo_kg = [1, 2]
+        super().__init__(nombre="Camion", velocidad=80, capacidad=30000, costofijo=30, costoporkm=5, costoporkg=0)
+
+           
+    def get_costoporkg (self):
+        raise Exception ("Invalid method")
+    
+    def calcular_costo(self, distancia, carga):
+        if carga < 15000:
+            costo_kg = self.costo_kg[0]
+        else:
+            costo_kg = self.costo_kg[1]
+
+        cantidad = math.ceil(carga / self.capacidad)
+        return cantidad * (self.costofijo + self.costoporkm * distancia + costo_kg * carga)
 
 
-               
+              
 class Tren (Vehiculos):
-    def _init_(self): 
-        super()._init_(nombre="Tren", modo="Ferroviario", velocidad=100, capacidad=150000, costofijo=100, costoporkm=20, costoporkg=3)
+    def __init__(self): 
+        super().__init__(nombre= "Tren", velocidad=100, capacidad=150000, costofijo=100, costoporkm=[20,15], costoporkg=3)
+
+    def get_costoporkm(self, distancia):
+       if distancia < 200 :
+            return self.costoporkm[0] 
+       else:
+           return self.costoporkm[1]
     
-    def calcular_tiempo(self,distancia,velocidad_max=None):
-        V=min(self.velocidad,velocidad_max) if velocidad_max else self.velocidad
-        return distancia/V
-    
+    def get_costoporkm (self):
+        raise Exception ("Invalid method")
+
 class Barco (Vehiculos):
-    def _init_(self): 
-        super()._init_(velocidad=40,capacidad=100000,costofijo=500,costopokm=15,costoporkg=2,tipo="Barco",modo="maritimo")       
+    def __init__(self): 
+        super().__init__(nombre="Barco",velocidad=40,capacidad=100000,costofijo=[500,1500],costopokm=15,costoporkg=2)  
+    
+
+    def get_costofijo(self, tipo):
+       if tipo=="fluvial" :
+            return self.costofijo[0] 
+       elif tipo=="maritimo":
+           return self.costofijo[1]
+       else:
+           raise Exception ("Invalid parameter")
+       
+    def get_costopfijo(self):
+        raise Exception ("Invalid method")
+
 
 class Avion(Vehiculos):
-    def _init_(self): 
-        super._init_(velocidad=600,capacidad=5000,costofijo=750,costoporkm=40, costoporkg=10,tipo="Avion",modo="Aereo")
+    def __init__(self): 
+        super()._init_(nombre= "Avion", velocidad=[400,600],capacidad=5000,costofijo=750,costoporkm=40, costoporkg=10)
     
-    def calcular_tiempo(self,distancia,probabilidad_clima =None):
-        v=self.velocidad
-        if probabilidad_clima:
-            v*=(1-probabilidad_clima) #reduce velocidad esperada
-        return distancia/v
+    def get_velocidad(self,buen_clima):
+        if buen_clima:
+            return self.velocidad[0]
+        else:
+            return self.velocidad[1]
+
+
+class Solicitud:
+    def __init__(self, id_carga, peso, origen, destino):
+        self.id_carga = id_carga
+        self.peso = peso
+        self.origen = origen
+        self.destino = destino
+        
+vehiculos_disponibles = [Camion(),Tren(), Barco(), Avion()]    
     
-vehiculos_disponibles = [Camion(),Tren(), Barco(), Avion()]
 
 
- #todo trayecto se hace con el mismo vehiculo, no puedo cambiar entre un nodo y otro
 
+
+ #todo trayecto se hace con el mismo vehiculo, no puedo cambiar entre un nodo y  
