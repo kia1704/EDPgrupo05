@@ -1,5 +1,4 @@
-import math 
-#aca importo esto pq encontre una funcion que te devuelve el entero mas grande 
+import math
 
 def encontrar_rutas(origen, destino, ruta_actual, nodos_visitados, rutas_encontradas):
     if origen == destino:
@@ -7,13 +6,14 @@ def encontrar_rutas(origen, destino, ruta_actual, nodos_visitados, rutas_encontr
         return
     for lista_conex in Conexiones.Conexiones_existentes.get(origen, []):
         conexion = lista_conex[0]
-        if conexion.nodo_destino in nodos_visitados:
-            continue  # No tnr cicloss
+        if conexion.destino in nodos_visitados:
+            continue  # Evitar ciclos
         ruta_actual.append(conexion)
-        nodos_visitados.add(conexion.nodo_destino)
-        encontrar_rutas(conexion.nodo_destino, destino, ruta_actual, nodos_visitados, rutas_encontradas)
+        nodos_visitados.add(conexion.destino)
+        encontrar_rutas(conexion.destino, destino, ruta_actual, nodos_visitados, rutas_encontradas)
         ruta_actual.pop()
-        nodos_visitados.remove(conexion.nodo_destino)
+        nodos_visitados.remove(conexion.destino)
+
 
 def evaluar_rutas(origen, destino, peso_carga, vehiculos_disponibles):
     rutas_encontradas = []
@@ -23,37 +23,46 @@ def evaluar_rutas(origen, destino, peso_carga, vehiculos_disponibles):
     for ruta in rutas_encontradas:
         for vehiculo in vehiculos_disponibles:
             puede = True
+
             for conexion in ruta:
+                # Validar tipo de conexión compatible con vehículo
                 if conexion.tipo.lower() not in vehiculo.nombre.lower():
                     puede = False
                     break
+                # Validar restricciones de conexión
                 if conexion.restriccion == "velocidad maxima" and vehiculo.velocidad > conexion.valor_de_restriccion:
                     puede = False
                     break
                 if conexion.restriccion == "peso maximo" and peso_carga > conexion.valor_de_restriccion:
                     puede = False
                     break
-                if peso_carga > vehiculo.capacidad:
-                    pass  
+
             if not puede:
                 continue
 
             cantidad_vehiculos = math.ceil(peso_carga / vehiculo.capacidad)
             distancia_total = sum(conexion.distancia for conexion in ruta)
+
             if isinstance(vehiculo, Camion):
                 costo_total = vehiculo.calcular_costo(distancia_total, peso_carga)
                 tiempo_total = distancia_total / vehiculo.velocidad
+
             elif isinstance(vehiculo, Tren):
-                costo_total = vehiculo.costofijo + vehiculo.get_costoporkm(distancia_total) * distancia_total + vehiculo.costoporkg * peso_carga
+                costo_km = vehiculo.get_costoporkm(distancia_total)
+                costo_total = cantidad_vehiculos * (vehiculo.costofijo + costo_km * distancia_total + vehiculo.costoporkg * peso_carga)
                 tiempo_total = distancia_total / vehiculo.velocidad
+
             elif isinstance(vehiculo, Barco):
                 tipo = ruta[0].tipo.lower()
-                costo_total = vehiculo.get_costofijo(tipo) + vehiculo.costopokm * distancia_total + vehiculo.costoporkg * peso_carga
+                costofijo = vehiculo.get_costofijo(tipo)
+                costo_total = cantidad_vehiculos * (costofijo + vehiculo.costoporkm * distancia_total + vehiculo.costoporkg * peso_carga)
                 tiempo_total = distancia_total / vehiculo.velocidad
+
             elif isinstance(vehiculo, Avion):
-                velocidad = vehiculo.velocidad[0]
-                costo_total = vehiculo.costofijo + vehiculo.costoporkm * distancia_total + vehiculo.costoporkg * peso_carga
+                velocidad = vehiculo.get_velocidad(prob_mal_tiempo=0.3)  # podés parametrizar esto
+                costo_total = cantidad_vehiculos * (vehiculo.costofijo + vehiculo.costoporkm * distancia_total + vehiculo.costoporkg * peso_carga)
                 tiempo_total = distancia_total / velocidad
+
             else:
                 continue
 
