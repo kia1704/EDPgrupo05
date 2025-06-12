@@ -53,31 +53,31 @@ class Vehiculos:
         return distancia / self.velocidad
 
     
-class Nodos:
-    nodos_existentes={}
-    def __init__(self,nombre ):
-        self.nombre=nombre
-    @classmethod
-    def agregar_nodo(cls,nodo):
-        if nodo.nombre not in cls.nodos_existentes:
-            cls.nodos_existentes[nodo.nombre] = nodo
-        else:
-            raise Exception("El nodo ya existe")
+#class Nodos:
+#    nodos_existentes={}
+#    def __init__(self,nombre ):
+#        self.nombre=nombre
+#    @classmethod
+#    def agregar_nodo(cls,nodo):
+#        if nodo.nombre not in cls.nodos_existentes:
+#            cls.nodos_existentes[nodo.nombre] = nodo
+#        else:
+#            raise Exception("El nodo ya existe")
        
         
-class Conexiones:
-    Conexiones_existentes:{}
-    def __init__(self, nodo_origen, nodo_destino, distancia, restriccion,valor_de_restriccion): # el tipo, restriccion y valor de restriccion  chequear porque hay dos formas de hacerlo
-        self.distancia=distancia
-        self.origen = nodo_origen 
-        self.destino = nodo_destino
-        self.distancia = distancia
-        self.restriccion = restriccion
-        self.valor_de_restriccion= valor_de_restriccion
+#class Conexiones:
+#    Conexiones_existentes:{}
+#    def __init__(self, nodo_origen, nodo_destino, distancia, restriccion,valor_de_restriccion): # el tipo, restriccion y valor de restriccion  chequear porque hay dos formas de hacerlo
+#        self.distancia=distancia
+#        self.origen = nodo_origen 
+#        self.destino = nodo_destino
+#        self.distancia = distancia
+#        self.restriccion = restriccion
+#        self.valor_de_restriccion= valor_de_restriccion
     
-    @classmethod
-    def agregar_conexion(cls, conexion):
-        cls.Conexion_existentes[conexion.nodo_origen]= []
+#    @classmethod
+#    def agregar_conexion(cls, conexion):
+#        cls.Conexion_existentes[conexion.nodo_origen]= []
 
 
 class Camion(Vehiculos):
@@ -167,12 +167,12 @@ class Avion(Vehiculos):
     def calcular_costo(self, distancia, carga):
         return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
 
-class Solicitud:
-    def __init__(self, id_carga, peso, origen, destino):
-        self.id_carga = id_carga
-        self.peso = peso
-        self.origen = origen
-        self.destino = destino
+#class Solicitud:
+#    def __init__(self, id_carga, peso, origen, destino):
+#        self.id_carga = id_carga
+#        self.peso = peso
+#        self.origen = origen
+#        self.destino = destino
         
 vehiculos_disponibles = [Camion(),Tren(), Barco(), Avion()]    
     
