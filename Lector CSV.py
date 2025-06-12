@@ -1,13 +1,11 @@
-import pandas as pd
-from conexion_nodos_solicitud import Nodos
-from conexion_nodos_solicitud import Conexiones
-from conexion_nodos_solicitud import Solicitud
+import csv
+from conexion_nodos_solicitud import Nodos, Conexiones, Solicitud
 
-class LectorCSV:
+class LectorCSV2:
     def leer_csv(self, archivo, tipo):
-
         try:
-            leido = pd.read_csv(archivo)
+            with open(archivo, newline='', encoding='utf-8') as f:
+                lector = list(csv.DictReader(f))
         except FileNotFoundError:
             print(f"El archivo '{archivo}' no fue encontrado.")
             return
@@ -16,16 +14,16 @@ class LectorCSV:
             return
 
         if tipo == "nodo":
-            self.procesar_nodos(leido)
+            self.procesar_nodos(lector)
         elif tipo == "conexion":
-            self.procesar_conexiones(leido)
+            self.procesar_conexiones(lector)
         elif tipo == "solicitud":
-            self.procesar_solicitudes(leido)
+            self.procesar_solicitudes(lector)
         else:
             print(f"Tipo de archivo desconocido: {tipo}")
 
-    def procesar_nodos(self, leido):
-        for _, row in leido.iterrows():
+    def procesar_nodos(self, lector):
+        for row in lector:
             nombre = row['nombre']
             nodo = Nodos(nombre)
             try:
@@ -33,44 +31,39 @@ class LectorCSV:
             except Exception as e:
                 print(f"Nodo repetido: {nombre} - {e}")
 
-    def procesar_conexiones(self, leido):
-        for _, row in leido.iterrows():
+    def procesar_conexiones(self, lector):
+        for row in lector:
             origen = Nodos.nodos_existentes.get(row['origen'])
             destino = Nodos.nodos_existentes.get(row['destino'])
-            if origen and destino: ##aca entra al if si origen y destino son nodos que existen
+            if origen and destino:
                 tipo = row['tipo']
-                distancia = row['distancia_km']
-                restriccion = row['restriccion'] if 'restriccion' in row else None
-                valor = row['valor_restriccion'] if 'valor_restriccion' in row else None
-                #restriccion = row.get('restriccion', None)
-                #valor = row.get('valor_restriccion', None)
-                if pd.isna(restriccion):  ## aca se chequea si en el archivo pandas hay un Nan y lo cambia por un None
-                    restriccion = None 
-                if pd.isna(valor): 
+                distancia = float(row['distancia_km'])
+                restriccion = row.get('restriccion') or None
+                valor = row.get('valor_restriccion') or None
+                if valor == "":
                     valor = None
+                if restriccion == "":
+                    restriccion = None
                 conexion = Conexiones(origen, destino, tipo, distancia, restriccion, valor)
                 Conexiones.agregar_conexion(conexion)
             else:
                 print(f"No se encontró el nodo origen o destino: {row['origen']} → {row['destino']}")
 
-    def procesar_solicitudes(self, leido):
-      
-      for _, fila in leido.iterrows():
-        id_carga = fila['id_carga']
-        peso = float(fila['peso_kg'])
-        origen = fila['origen']
-        destino = fila['destino']
+    def procesar_solicitudes(self, lector):
+        for fila in lector:
+            id_carga = fila['id_carga']
+            peso = float(fila['peso_kg'])
+            origen = fila['origen']
+            destino = fila['destino']
 
-        if origen not in Nodos.nodos_existentes or destino not in Nodos.nodos_existentes:
-            print(f"Nodo no encontrado en solicitud: {origen} → {destino}")
-            continue
+            if origen not in Nodos.nodos_existentes or destino not in Nodos.nodos_existentes:
+                print(f"Nodo no encontrado en solicitud: {origen} → {destino}")
+                continue
 
-        solicitud = Solicitud(id_carga,peso,Nodos.nodos_existentes[origen],Nodos.nodos_existentes[destino])
-        
-        Solicitud.agregar_solicitud(solicitud)
-
-
-lector = LectorCSV()
-lector.leer_csv("nodos.csv", "nodo")
-lector.leer_csv("conexiones.csv", "conexion")
-lector.leer_csv("solicitud.csv", "solicitud")
+            solicitud = Solicitud(
+                id_carga,
+                peso,
+                Nodos.nodos_existentes[origen],
+                Nodos.nodos_existentes[destino]
+            )
+            Solicitud.agregar_solicitud(solicitud)
