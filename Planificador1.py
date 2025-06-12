@@ -87,4 +87,3 @@ class Planificador:
             return mas_barata, mas_rapida
         else:
             return None, None
-
