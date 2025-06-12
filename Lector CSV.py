@@ -1,6 +1,7 @@
 import pandas as pd
-from conexion_y_nodos import Nodos
-from conexion_y_nodos import Conexiones
+from conexion_nodos_solicitud import Nodos
+from conexion_nodos_solicitud import Conexiones
+from conexion_nodos_solicitud import Solicitud
 
 class LectorCSV:
     def leer_csv(self, archivo, tipo):
@@ -18,6 +19,8 @@ class LectorCSV:
             self.procesar_nodos(leido)
         elif tipo == "conexion":
             self.procesar_conexiones(leido)
+        elif tipo == "solicitud":
+            self.procesar_solicitudes(leido)
         else:
             print(f"Tipo de archivo desconocido: {tipo}")
 
@@ -50,7 +53,24 @@ class LectorCSV:
             else:
                 print(f"No se encontró el nodo origen o destino: {row['origen']} → {row['destino']}")
 
+    def procesar_solicitudes(self, leido):
+      
+      for _, fila in leido.iterrows():
+        id_carga = fila['id_carga']
+        peso = float(fila['peso_kg'])
+        origen = fila['origen']
+        destino = fila['destino']
+
+        if origen not in Nodos.nodos_existentes or destino not in Nodos.nodos_existentes:
+            print(f"Nodo no encontrado en solicitud: {origen} → {destino}")
+            continue
+
+        solicitud = Solicitud(id_carga,peso,Nodos.nodos_existentes[origen],Nodos.nodos_existentes[destino])
+        
+        Solicitud.agregar_solicitud(solicitud)
+
 
 lector = LectorCSV()
 lector.leer_csv("nodos.csv", "nodo")
 lector.leer_csv("conexiones.csv", "conexion")
+lector.leer_csv("solicitud.csv", "solicitud")
