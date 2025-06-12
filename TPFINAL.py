@@ -1,3 +1,5 @@
+import math
+import random
 class Vehiculos:
     def __init__(self,nombre, velocidad, capacidad, costofijo, costoporkm, costoporkg):
         self.nombre = nombre
@@ -96,20 +98,28 @@ class Camion(Vehiculos):
         cantidad = math.ceil(carga / self.capacidad)
         return cantidad * (self.costofijo + self.costoporkm * distancia + costo_kg * carga)
 
-
+    
               
 class Tren (Vehiculos):
     def __init__(self): 
-        super().__init__(nombre= "Tren", velocidad=100, capacidad=150000, costofijo=100, costoporkm=[20,15], costoporkg=3)
+        self.costoporkm = [20, 15]
+        super().__init__(nombre= "Tren", velocidad=100, capacidad=150000, costofijo=100, costoporkm=0, costoporkg=3)
 
     def get_costoporkm(self, distancia):
        if distancia < 200 :
             return self.costoporkm[0] 
        else:
            return self.costoporkm[1]
+       
+    def calcular_costo(self, distancia, carga):
+        costo_km = self.get_costoporkm(distancia)
+        return self.costofijo + costo_km * distancia + self.costoporkg * carga   
+       
     
-    def get_costoporkm (self):
-        raise Exception ("Invalid method")
+    # preguntar def get_costoporkm (self):
+        # raise Exception ("Invalid method")
+    
+
 
 class Barco (Vehiculos):
     def __init__(self): 
@@ -126,18 +136,36 @@ class Barco (Vehiculos):
        
     def get_costopfijo(self):
         raise Exception ("Invalid method")
+    
+    def calcular_costo(self, distancia, carga, tipo="fluvial"):
+        costo_fijo = self.get_costofijo(tipo)
+        return costo_fijo + self.costoporkm * distancia + self.costoporkg * carga
 
 
 class Avion(Vehiculos):
     def __init__(self): 
-        super()._init_(nombre= "Avion", velocidad=[400,600],capacidad=5000,costofijo=750,costoporkm=40, costoporkg=10)
+        self.velocidades = {"bueno": 600, "malo": 400}
+        super()._init_(nombre= "Avion", velocidad = None ,capacidad=5000,costofijo=750,costoporkm=40, costoporkg=10)
     
-    def get_velocidad(self,buen_clima):
-        if buen_clima:
-            return self.velocidad[0]
+    def determinar_clima(self, prob_mal_tiempo):
+        """
+        Retorna 'bueno' o 'malo' según la probabilidad de mal clima.
+        """
+        if random.random() > prob_mal_tiempo:
+            return "bueno"
         else:
-            return self.velocidad[1]
+            return "malo"
 
+    def get_velocidad(self, prob_mal_tiempo):
+        clima = self.determinar_clima(prob_mal_tiempo)
+        return self.velocidades[clima]
+
+    def calcular_tiempo(self, distancia, prob_mal_tiempo):
+        velocidad = self.get_velocidad(prob_mal_tiempo)
+        return distancia / velocidad
+
+    def calcular_costo(self, distancia, carga):
+        return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
 
 class Solicitud:
     def __init__(self, id_carga, peso, origen, destino):
