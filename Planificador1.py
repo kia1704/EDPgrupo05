@@ -2,9 +2,13 @@ import math
 from conexion_nodos_solicitud import Conexiones
 from TPFINAL import Camion, Tren, Barco, Avion
 
+import math
+from conexion_nodos_solicitud import Conexiones
+from TPFINAL import Camion, Tren, Barco, Avion
+
 class Planificador:
     @staticmethod
-    def encontrar_rutas(origen, destino, ruta_actual=None, nodos_visitados=None, rutas_encontradas=None):
+    def encontrar_rutas(origen, destino, tipo_transporte, ruta_actual=None, nodos_visitados=None, rutas_encontradas=None):
         if ruta_actual is None:
             ruta_actual = []
         if nodos_visitados is None:
@@ -17,6 +21,9 @@ class Planificador:
             return
 
         for conexion in Conexiones.Conexiones_existentes.get(origen, []):
+            if conexion.tipo.lower() != tipo_transporte.lower():
+                continue
+
             siguiente = conexion.nodo_destino
             if siguiente in nodos_visitados:
                 continue
@@ -24,33 +31,29 @@ class Planificador:
             ruta_actual.append(conexion)
             nodos_visitados.add(siguiente)
 
-            Planificador.encontrar_rutas(siguiente, destino, ruta_actual, nodos_visitados, rutas_encontradas)
+            Planificador.encontrar_rutas(siguiente, destino, tipo_transporte, ruta_actual, nodos_visitados, rutas_encontradas)
 
             ruta_actual.pop()
             nodos_visitados.remove(siguiente)
 
     @staticmethod
     def evaluar_rutas(origen, destino, peso_carga, vehiculos_disponibles):
-        rutas_encontradas = []
-        Planificador.encontrar_rutas(origen, destino, [], set([origen]), rutas_encontradas)
         resultados = []
 
-        for ruta in rutas_encontradas:
-            for vehiculo in vehiculos_disponibles:
-                puede = True
+        for vehiculo in vehiculos_disponibles:
+            rutas_encontradas = []
+            Planificador.encontrar_rutas(origen, destino, vehiculo.nombre.lower(), [], set([origen]), rutas_encontradas)
 
+            for ruta in rutas_encontradas:
+                tipos_ok = True
                 for conexion in ruta:
                     if conexion.tipo.lower() not in vehiculo.nombre.lower():
-                        puede = False
-                        break
+                        tipos_ok = False
                     if conexion.restriccion == "velocidad maxima" and vehiculo.velocidad > conexion.valor_de_restriccion:
-                        puede = False
-                        break
+                        tipos_ok = False
                     if conexion.restriccion == "peso maximo" and peso_carga > conexion.valor_de_restriccion:
-                        puede = False
-                        break
-
-                if not puede:
+                        tipos_ok = False
+                if not tipos_ok:
                     continue
 
                 cantidad = math.ceil(peso_carga / vehiculo.capacidad)
