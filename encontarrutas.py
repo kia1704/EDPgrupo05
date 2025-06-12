@@ -1,82 +1,58 @@
+from conexion_nodos_solicitud import Conexiones, Solicitud, Nodos
 import math
+import random
 
-def encontrar_rutas(origen, destino, ruta_actual, nodos_visitados, rutas_encontradas):
-    if origen == destino:
-        rutas_encontradas.append(list(ruta_actual))
-        return
-    for lista_conex in Conexiones.Conexiones_existentes.get(origen, []):
-        conexion = lista_conex[0]
-        if conexion.destino in nodos_visitados:
-            continue  # Evitar ciclos
-        ruta_actual.append(conexion)
-        nodos_visitados.add(conexion.destino)
-        encontrar_rutas(conexion.destino, destino, ruta_actual, nodos_visitados, rutas_encontradas)
-        ruta_actual.pop()
-        nodos_visitados.remove(conexion.destino)
+class Planificador:
+    def __init__(self, vehiculos_disponibles):
+        self.vehiculos = vehiculos_disponibles
 
+    def encontrar_rutas(self, origen, destino):
+        rutas_posibles = []
+        self._explorar_rutas(origen, destino, [], set([origen]), rutas_posibles)
+        return rutas_posibles
 
-def evaluar_rutas(origen, destino, peso_carga, vehiculos_disponibles):
-    rutas_encontradas = []
-    encontrar_rutas(origen, destino, [], set([origen]), rutas_encontradas)
-    resultados = []
+    def _explorar_rutas(self, actual, destino, recorrido, visitados, rutas_posibles):
+        if actual == destino:
+            rutas_posibles.append(list(recorrido))
+            return
 
-    for ruta in rutas_encontradas:
-        for vehiculo in vehiculos_disponibles:
-            puede = True
-
-            for conexion in ruta:
-                # Validar tipo de conexión compatible con vehículo
-                if conexion.tipo.lower() not in vehiculo.nombre.lower():
-                    puede = False
-                    break
-                # Validar restricciones de conexión
-                if conexion.restriccion == "velocidad maxima" and vehiculo.velocidad > conexion.valor_de_restriccion:
-                    puede = False
-                    break
-                if conexion.restriccion == "peso maximo" and peso_carga > conexion.valor_de_restriccion:
-                    puede = False
-                    break
-
-            if not puede:
+        for conexion in Conexiones.Conexiones_existentes.get(actual, []):
+            if conexion.nodo_destino in visitados:
                 continue
 
-            cantidad_vehiculos = math.ceil(peso_carga / vehiculo.capacidad)
-            distancia_total = sum(conexion.distancia for conexion in ruta)
+            recorrido.append(conexion)
+            visitados.add(conexion.nodo_destino)
+            self._explorar_rutas(conexion.nodo_destino, destino, recorrido, visitados, rutas_posibles)
+            recorrido.pop()
+            visitados.remove(conexion.nodo_destino)
 
-            if isinstance(vehiculo, Camion):
-                costo_total = vehiculo.calcular_costo(distancia_total, peso_carga)
-                tiempo_total = distancia_total / vehiculo.velocidad
+    def evaluar_rutas(self, solicitud):
+        rutas = self.encontrar_rutas(solicitud.origen, solicitud.destino)
+        opciones_validas = []
 
-            elif isinstance(vehiculo, Tren):
-                costo_km = vehiculo.get_costoporkm(distancia_total)
-                costo_total = cantidad_vehiculos * (vehiculo.costofijo + costo_km * distancia_total + vehiculo.costoporkg * peso_carga)
-                tiempo_total = distancia_total / vehiculo.velocidad
+        for ruta in rutas:
+            for vehiculo in self.vehiculos:
+                if not vehiculo.ruta_valida(ruta, solicitud.peso):
+                    continue
 
-            elif isinstance(vehiculo, Barco):
-                tipo = ruta[0].tipo.lower()
-                costofijo = vehiculo.get_costofijo(tipo)
-                costo_total = cantidad_vehiculos * (costofijo + vehiculo.costoporkm * distancia_total + vehiculo.costoporkg * peso_carga)
-                tiempo_total = distancia_total / vehiculo.velocidad
+                cantidad = vehiculo.cantidad_necesaria(solicitud.peso)
+                distancia = sum(c.distancia for c in ruta)
+                velocidad = vehiculo.velocidad_real(distancia)
 
-            elif isinstance(vehiculo, Avion):
-                velocidad = vehiculo.get_velocidad(prob_mal_tiempo=0.3)  # podés parametrizar esto
-                costo_total = cantidad_vehiculos * (vehiculo.costofijo + vehiculo.costoporkm * distancia_total + vehiculo.costoporkg * peso_carga)
-                tiempo_total = distancia_total / velocidad
+                tiempo = distancia / velocidad
+                costo = vehiculo.calcular_costo_ruta(ruta, solicitud.peso, cantidad)
 
-            else:
-                continue
+                opciones_validas.append({
+                    "ruta": ruta,
+                    "vehiculo": vehiculo.nombre,
+                    "costo": costo,
+                    "tiempo": tiempo,
+                    "cantidad_vehiculos": cantidad
+                })
 
-            resultados.append({
-                "ruta": ruta,
-                "vehiculo": vehiculo.nombre,
-                "costo": costo_total,
-                "tiempo": tiempo_total,
-                "cantidad_vehiculos": cantidad_vehiculos
-            })
-
-    if resultados:
-        mas_barata = min(resultados, key=lambda x: x["costo"])
-        mas_rapida = min(resultados, key=lambda x: x["tiempo"])
-        return mas_barata, mas_rapida
-    else:
+        if opciones_validas:
+            return (
+                min(opciones_validas, key=lambda x: x["costo"]),
+                min(opciones_validas, key=lambda x: x["tiempo"])
+            )
         return None, None
