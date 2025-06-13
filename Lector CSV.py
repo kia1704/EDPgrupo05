@@ -1,4 +1,4 @@
-import csv
+ import csv
 from conexion_nodos_solicitud import Nodos, Conexiones, Solicitud
 
 class LectorCSV2:
@@ -31,21 +31,44 @@ class LectorCSV2:
             except Exception as e:
                 print(f"Nodo repetido: {nombre} - {e}")
 
+#     origen,destino,tipo,distancia_km,restriccion,valor_restriccion
+# Zarate,Buenos_Aires,Ferroviaria,85,velocidad_max,80
+# Zarate,Junin,Ferroviaria,185,,
+# Junin,Azul,Ferroviaria,265,,
+# Azul,Mar_del_Plata,Ferroviaria,246,,
+# Buenos_Aires,Mar_del_Plata,Ferroviaria,384,,
+# Zarate,Buenos_Aires,Automotor,85,,
+# Zarate,Junin,Automotor,185,peso_max,15000
+# Junin,Buenos_Aires,Automotor,238,,
+# Junin,Azul,Automotor,265,,
+# Azul,Buenos_Aires,Automotor,278,,
+# Azul,Mar_del_Plata,Automotor,246,,
+# Buenos_Aires,Mar_del_Plata,Automotor,384,,
+# Zarate,Buenos_Aires,Fluvial,85,tipo,fluvial
+# Buenos_Aires,Mar_del_Plata,Fluvial,384,tipo,maritimo
+# Junin,Buenos_Aires,Aerea,238,prob_mal_tiempo,0.1
+# Azul,Buenos_Aires,Aerea,278,prob_mal_tiempo,0.2
+# Buenos_Aires,Mar_del_Plata,Aerea,384,prob_mal_tiempo,0.3
+
+
     def procesar_conexiones(self, lector):
         for row in lector:
             origen = Nodos.nodos_existentes.get(row['origen'])
             destino = Nodos.nodos_existentes.get(row['destino'])
-            if origen and destino:
+            if origen and destino: #se fija si ningunsea null
                 tipo = row['tipo']
-                distancia = float(row['distancia_km'])
+                distancia = int(row['distancia_km']) #fijarse una excepcion 
                 restriccion = row.get('restriccion') or None
                 valor = row.get('valor_restriccion') or None
                 if valor == "":
                     valor = None
                 if restriccion == "":
                     restriccion = None
-                conexion = Conexiones(origen, destino, tipo, distancia, restriccion, valor)
-                Conexiones.agregar_conexion(conexion)
+                conexion = Conexiones(origen.nombre, destino.nombre, tipo, distancia, restriccion, valor)
+                #print(f"--> {conexion}")
+                #print(f"-----------")
+                origen.agregar_conexion(conexion,destino.nombre)
+                destino.agregar_conexion(conexion,origen.nombre)
             else:
                 print(f"No se encontró el nodo origen o destino: {row['origen']} → {row['destino']}")
 
@@ -60,10 +83,5 @@ class LectorCSV2:
                 print(f"Nodo no encontrado en solicitud: {origen} → {destino}")
                 continue
 
-            solicitud = Solicitud(
-                id_carga,
-                peso,
-                Nodos.nodos_existentes[origen],
-                Nodos.nodos_existentes[destino]
-            )
+            solicitud = Solicitud(id_carga,peso,origen,destino)
             Solicitud.agregar_solicitud(solicitud)
