@@ -2,18 +2,35 @@ class Nodos:
     nodos_existentes={}
     def __init__(self,nombre ):
         self.nombre=nombre
+        self.conexiones = {}
 
     def __repr__(self):
-        return self.nombre
-    
+        return self.__str__()
+
     def __str__(self):
-        return self.__repr__()
+        if not self.conexiones:
+            return f"Nodo {self.nombre} sin conexiones"
+        
+        conexiones_str = []
+        for nodo_destino, conexiones in self.conexiones.items():
+            for conexion in conexiones:
+                conexiones_str.append(f"-> {nodo_destino} ({conexion.tipo}, {conexion.distancia} km)")
+        
+        conexiones_formateadas = "\n  ".join(conexiones_str)
+        return f"Nodo {self.nombre}:\n  {conexiones_formateadas}"
+
 
     def __eq__(self, other):
         return isinstance(other, Nodos) and self.nombre == other.nombre
 
     def __hash__(self):
         return hash(self.nombre)
+
+    def agregar_conexion(self, conexion, nodo):
+        if nodo in self.conexiones:
+            self.conexiones[nodo].append(conexion) 
+        else:
+            self.conexiones[nodo] = [conexion]
 
     @classmethod
     def agregar_nodo(cls,nodo):
@@ -26,7 +43,6 @@ class Nodos:
 
 
 class Conexiones:
-    Conexiones_existentes= {}
 
     def __init__(self, nodo_origen, nodo_destino,tipo, distancia, restriccion=None,valor_de_restriccion=None): # el tipo, restriccion y valor de restriccion  chequear porque hay dos formas de hacerlo
         
@@ -36,34 +52,14 @@ class Conexiones:
         self.distancia = distancia
         self.restriccion = restriccion
         self.valor_de_restriccion= valor_de_restriccion
-    
-    #def __repr__(self):
-    #    return (f"Conexiones({self.nodo_origen} -> {self.nodo_destino}, "
-    #            f"tipo={self.tipo}, distancia={self.distancia} km, "
-    #            f"restriccion={self.restriccion}, valor={self.valor_de_restriccion})")
+
     
     def __repr__(self):
-        desc=(f"{self.tipo.upper()} de {self.nodo_origen} a {self.nodo_destino}, ({self.distancia} km ")
-        if self.restriccion is not None:
-            desc += f", restricción: {self.restriccion}"
-            if self.valor_de_restriccion is not None: 
-                desc+= f" = {self.valor_de_restriccion})"
+        return self.__str__()
 
-        return desc
-    
-    
     def __str__(self):
-        return self.__repr__()
+        return f"{self.tipo.upper()} entre {self.nodo_origen} y {self.nodo_destino} {self.distancia} km"
     
-    @classmethod
-    def agregar_conexion(cls, conexion):
-        if conexion.nodo_origen not in cls.Conexiones_existentes:
-            cls.Conexiones_existentes[conexion.nodo_origen]= []
-        cls.Conexiones_existentes[conexion.nodo_origen].append([conexion]) #me conviene hacer lista de listas ?
-        #print(f"conexion agregada: {conexion}")
-        #print(cls.Conexiones_existentes)
-
-
 
 
 
@@ -78,36 +74,32 @@ class Solicitud:
 
 
     def __repr__(self):
-        return f"Peso={self.peso}, origen={self.origen}, destino={self.destino})"
+        return self.__str__()
 
     def __str__(self):
-        return self.__repr__()
+        return f"id_carga={self.id_carga}, peso={self.peso}, origen={self.origen}, destino={self.destino}"
+    
     
     @classmethod
     def agregar_solicitud (cls,solicitud):
         if solicitud.id_carga in cls.solicitudes_existentes:
             raise ValueError ("Este id ya existe")
         cls.solicitudes_existentes[solicitud.id_carga]=solicitud
-        
 
+class Rutas:
+
+    def __init__(self, tipo, conexiones, costo, tiempo):
+        self.tipo = tipo
+        self.conexiones = conexiones
+        self.costo = costo
+        self.tiempo = tiempo
+
+    def __repr__(self):
+        return self.__str__()
     
+    def __str__(self):
+        conexiones_str = "\n".join(str(conexion) for conexion in self.conexiones)
+        return f"Ruta tipo {self.tipo}:\n{conexiones_str}\nCosto: {self.costo}\nTiempo: {self.tiempo}"
 
-        
 
-
-
-#nodo1=Nodos("Zarate")
-#nodo2=Nodos("Junin")
-#nodo3=Nodos("Mar del Plata")
-#nodo4=Nodos("Buenos Aires")        
-
-#Conexion1=Conexiones(nodo1,nodo4, "ferroviario", 85 , "velocidad maxima", 80 )
-#Conexion2=Conexiones(nodo2,nodo3, "Maritimo", 500 , "fluvial")
-#Conexiones.agregar_conexion(Conexion1)
-#Conexiones.agregar_conexion(Conexion2)
-#for origen, lista in Conexiones.Conexiones_existentes.items():
-#     for origen, lista in Conexiones.Conexiones_existentes.items():
-#        print(f"{origen}:")
-##        for c in lista:
-#            print(f"  - {c}")
 
