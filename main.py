@@ -1,6 +1,7 @@
 from conexion_nodos_solicitud import Nodos
 from conexion_nodos_solicitud import Conexiones
 from LectorCSV2 import LectorCSV2
+# from grafico import graficar_itinerario
 
 from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
