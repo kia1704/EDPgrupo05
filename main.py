@@ -51,12 +51,4 @@ print("\nSolicitudes existentes:")
 for solicitud in Solicitud.solicitudes_existentes.values():
     print(solicitud)
 
-una_solicitud = next(iter(Solicitud.solicitudes_existentes.values()))
-rutas_automotor, _ = Planificador.encontrar_rutas("Zarate", "Mar_del_Plata", "Automotor")
-
-if rutas_automotor:
-    una_ruta = rutas_automotor[0]
-    graficar_itinerario(una_ruta, "Camión", una_solicitud.carga)
-else:
-    print("No se encontraron rutas automotor para graficar.")
 
