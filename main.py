@@ -1,7 +1,6 @@
 from conexion_nodos_solicitud import Nodos
 from conexion_nodos_solicitud import Conexiones
 from LectorCSV2 import LectorCSV2
-from grafico import graficar_itinerario
 
 from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
@@ -50,5 +49,41 @@ for ruta in rutas:
 print("\nSolicitudes existentes:")
 for solicitud in Solicitud.solicitudes_existentes.values():
     print(solicitud)
+    
+from Graficos import Itinerario
+from TPFINAL import Camion, Tren , Barco, Avion  
+
+vehiculos_por_tipo = {
+    "Automotor": Camion,
+    "Ferroviaria": Tren,
+    "Fluvial": Barco,
+    "Aerea": Avion
+}
+
+print("\n--- Generación de gráfico para la primera solicitud con ruta válida ---")
+
+graficado = False  # bandera para cortar la iteración 
+
+for solicitud in Solicitud.solicitudes_existentes.values():
+    if graficado:
+        continue
+
+    origen = solicitud.origen
+    destino = solicitud.destino
+    tipo = solicitud.tipo_transporte
+    peso = solicitud.peso_kg
+
+    rutas, _ = Planificador.encontrar_rutas(origen, destino, tipo)
+
+    if rutas:
+        clase_vehiculo = vehiculos_por_tipo.get(tipo)
+        if clase_vehiculo:
+            vehiculo = clase_vehiculo()
+            ruta_elegida = rutas[0]
+            itinerario = Itinerario(ruta_elegida)
+            itinerario.graficar(vehiculo, peso)
+            graficado = True
+
+
 
 
