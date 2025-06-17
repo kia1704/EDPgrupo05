@@ -1,7 +1,7 @@
 from conexion_nodos_solicitud import Nodos
 from conexion_nodos_solicitud import Conexiones
 from LectorCSV2 import LectorCSV2
-# from grafico import graficar_itinerario
+from grafico import graficar_itinerario
 
 from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
@@ -50,4 +50,13 @@ for ruta in rutas:
 print("\nSolicitudes existentes:")
 for solicitud in Solicitud.solicitudes_existentes.values():
     print(solicitud)
+
+una_solicitud = next(iter(Solicitud.solicitudes_existentes.values()))
+rutas_automotor, _ = Planificador.encontrar_rutas("Zarate", "Mar_del_Plata", "Automotor")
+
+if rutas_automotor:
+    una_ruta = rutas_automotor[0]
+    graficar_itinerario(una_ruta, "Camión", una_solicitud.carga)
+else:
+    print("No se encontraron rutas automotor para graficar.")
 
