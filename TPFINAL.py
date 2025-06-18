@@ -62,14 +62,16 @@ class Camion(Vehiculos):
     def get_costoporkg (self):
         raise Exception ("Invalid method")
     
-    def calcular_costo(self, distancia, carga):
+    def calcular_costo(self, distancia, carga, capacidad):
         if carga < 15000:
             costo_kg = self.costo_kg[0]
         else:
             costo_kg = self.costo_kg[1]
 
-        cantidad = math.ceil(carga / self.capacidad)
-        return cantidad * (self.costofijo + self.costoporkm * distancia + costo_kg * carga)
+        cantidad = math.ceil(carga / capacidad)
+        costo=cantidad *(self.costofijo + (self.costoporkm * distancia) + (costo_kg*carga))
+
+        return costo,cantidad
 
     
               
@@ -137,4 +139,4 @@ class Avion(Vehiculos):
 
     def calcular_costo(self, distancia, carga):
         return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
- 
+
