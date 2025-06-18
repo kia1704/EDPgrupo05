@@ -88,7 +88,8 @@ class Tren (Vehiculos):
        
     def calcular_costo(self, distancia, carga):
         costo_km = self.get_costoporkm(distancia)
-        return self.costofijo + costo_km * distancia + self.costoporkg * carga   
+
+        return self.costofijo + costo_km * distancia + self.costoporkg * carga
        
 
     
@@ -107,10 +108,10 @@ class Barco (Vehiculos):
        else:
            raise Exception ("Invalid parameter")
        
-    def get_costopfijo(self):
-        raise Exception ("Invalid method")
+    #def get_costopfijo(self):                          #porque esta esto aca 
+     #   #raise Exception ("Invalid method")
     
-    def calcular_costo(self, distancia, carga, tipo="fluvial"):
+    def calcular_costo(self, distancia, carga, tipo):
         costo_fijo = self.get_costofijo(tipo)
         return costo_fijo + self.costoporkm * distancia + self.costoporkg * carga
 
@@ -139,4 +140,3 @@ class Avion(Vehiculos):
 
     def calcular_costo(self, distancia, carga):
         return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
-
