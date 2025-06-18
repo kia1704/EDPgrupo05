@@ -1,4 +1,4 @@
- import math
+import math
 from conexion_nodos_solicitud import Conexiones, Nodos
 from TPFINAL import Camion, Tren, Barco, Avion
 
