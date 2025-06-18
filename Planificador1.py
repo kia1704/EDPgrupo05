@@ -6,6 +6,7 @@ import math
 from conexion_nodos_solicitud import Conexiones
 from TPFINAL import Camion, Tren, Barco, Avion
 
+
 class Planificador:
     @staticmethod
     def encontrar_rutas(origen, destino, tipo_transporte, ruta_actual=None, nodos_visitados=None, rutas_encontradas=None):
@@ -38,20 +39,46 @@ class Planificador:
 
         return rutas_encontradas
     
-#Zarate,Junin,Automotor,185,peso_max,15000
+
+
+            
     @staticmethod
     def evaluar_rutas_automotor(origen, destino, peso_carga):
-            resultados = []
+        resultados = []
 
-            camion = Camion()
+        camion = Camion()
+        rutas = Planificador.encontrar_rutas(origen, destino, "automotor")
 
-            rutas = Planificador.encontrar_rutas(origen, destino, "automotor")
+        for ruta in rutas:
+            distancia_total = 0
+            peso_max = camion.capacidad  # Comienza con capacidad total del camión
 
-            peso_max = camion.capacidad
+            for conexion in ruta:
+                distancia_total += conexion.distancia
 
-            for ruta in rutas:
-                for conexion in ruta:
-                    if conexion.restriccion == "peso maximo":
-                        peso_max = min(peso_max, conexion.valor_de_restriccion)
+                    # Si hay una restricción de peso, se aplica para toda la ruta
+                if conexion.restriccion == "peso maximo":
+                    if conexion.valor_de_restriccion:
+                        peso_max = min(peso_max, float(conexion.valor_de_restriccion))
 
-                #continuar
+            costo,cantidad = camion.calcular_costo(distancia_total,peso_carga,peso_max)    
+            
+
+            #chequear esta lista de dicc
+            resultados.append({                       
+                "ruta": ruta,
+                "distancia_total": distancia_total,
+                "peso_maximo_utilizado": peso_max,
+                "cantidad_camiones": cantidad,
+                "costo_total": costo
+                })
+
+        
+        mejor_por_costo = min(resultados, key=lambda r: r["costo_total"])
+        mejor_por_tiempo = min(resultados, key=lambda r: r["distancia_total"])
+
+        return {"mejor_por_costo":mejor_por_costo,"mejor_por_tiempo": mejor_por_tiempo }  #capaz me conviene ponerlo en una lista o similar para cuando comparo con los otros medios despues
+        
+
+            
+
