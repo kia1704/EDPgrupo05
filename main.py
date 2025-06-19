@@ -5,7 +5,7 @@ from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
 from graficos import GraficadorRuta
 
-
+#falta generar las validaciones necesarias
 lector = LectorCSV2()
 lector.leer_csv("nodos.csv", "nodo")
 lector.leer_csv("conexiones.csv", "conexion")
