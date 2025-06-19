@@ -86,20 +86,4 @@ class Solicitud:
             raise ValueError ("Este id ya existe")
         cls.solicitudes_existentes[solicitud.id_carga]=solicitud
 
-class Rutas:
-
-    def __init__(self, tipo, conexiones, costo, tiempo):
-        self.tipo = tipo
-        self.conexiones = conexiones
-        self.costo = costo
-        self.tiempo = tiempo
-
-    def __repr__(self):
-        return self.__str__()
-    
-    def __str__(self):
-        conexiones_str = "\n".join(str(conexion) for conexion in self.conexiones)
-        return f"Ruta tipo {self.tipo}:\n{conexiones_str}\nCosto: {self.costo}\nTiempo: {self.tiempo}"
-
-
 
