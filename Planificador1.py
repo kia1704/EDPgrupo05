@@ -1,4 +1,8 @@
 import math
+from conexion_nodos_solicitud import Conexiones, Nodos
+from TPFINAL import Camion, Tren, Barco, Avion
+
+import math
 from conexion_nodos_solicitud import Conexiones
 from TPFINAL import Camion, Tren, Barco, Avion
 
@@ -124,10 +128,8 @@ class Planificador:
             distancia_total = 0
             tiempo_total = 0
             costo_ruta=0
-            print(ruta)
             for conexion in ruta:
                 distancia_total += conexion.distancia
-                print(conexion)
                 if conexion.restriccion != None:     #es necesario este if?
                     velocidad= min(int(conexion.valor_de_restriccion),tren.get_velocidad())
                     tiempo_total+= (conexion.distancia/velocidad)
@@ -177,7 +179,6 @@ class Planificador:
 
         return {"Mejor costo aereo":mejor_por_costo,"Mejor tiempo aereo": mejor_por_tiempo }
             
-    @staticmethod
     def evaluar_mejores_rutas(origen, destino, peso_carga):
         # Ejecuta los 4 métodos de evaluación
         automotor = Planificador.evaluar_rutas_automotor(origen, destino, peso_carga)
@@ -185,110 +186,24 @@ class Planificador:
         maritimo = Planificador.evaluar_rutas_maritimo(origen, destino, peso_carga)
         aereo = Planificador.evaluar_rutas_aerea(origen, destino, peso_carga)
 
-        # Juntar los mejores resultados de cada tipo
-        mejores_rutas = []
+        # Unir todos los resultados en una lista
+        resultados = [("automotor", automotor),("ferroviario", ferroviario),("maritimo", maritimo),("aereo", aereo)]
 
-        for resultado in [automotor, ferroviario, maritimo, aereo]:
-            if resultado["Mejor costo automotor"] is not None:
-                mejores_rutas.append(("automotor", resultado["Mejor costo automotor"]))
-            elif resultado["Mejor costo ferroviario"] is not None:
-                mejores_rutas.append(("ferroviario", resultado["Mejor costo ferroviario"]))
-            elif resultado["Mejor costo maritimo"] is not None:
-                mejores_rutas.append(("maritimo", resultado["Mejor costo maritimo"]))
-            elif resultado["Mejor costo aereo"] is not None:
-                mejores_rutas.append(("aereo", resultado["Mejor costo aereo"]))
+        # Buscar la mejor ruta por costo y por tiempo en general
+        mejores_costo = []
+        mejores_tiempo = []
 
-        # Mejor por costo
-        mejor_por_costo = min(mejores_rutas, key=lambda r: r[1]["costo"]) if mejores_rutas else None
+        for tipo, resultado in resultados:
+            for clave, valor in resultado.items():
+                if valor is not None and "costo" in clave:
+                    mejores_costo.append((tipo, valor))
+                if valor is not None and "tiempo" in clave:
+                    mejores_tiempo.append((tipo, valor))
 
-        # Juntar los mejores por tiempo
-        mejores_tiempos = []
+        mejor_por_costo = min(mejores_costo, key=lambda r: r[1]["costo"]) if mejores_costo else None
+        mejor_por_tiempo = min(mejores_tiempo, key=lambda r: r[1]["tiempo"]) if mejores_tiempo else None
 
-        for resultado in [automotor, ferroviario, maritimo, aereo]:
-            if resultado["Mejor tiempo automotor"] is not None:
-                mejores_tiempos.append(("automotor", resultado["Mejor tiempo automotor"]))
-            if resultado["Mejor tiempo ferroviario"] is not None:
-                mejores_tiempos.append(("ferroviario", resultado["Mejor tiempo ferroviario"]))
-            if resultado["Mejor tiempo maritimo"] is not None:
-                mejores_tiempos.append(("maritimo", resultado["Mejor tiempo maritimo"]))
-            if resultado["Mejor tiempo aereo"] is not None:
-                mejores_tiempos.append(("aereo", resultado["Mejor tiempo aereo"]))
-
-        # Mejor por tiempo
-        mejor_por_tiempo = min(mejores_tiempos, key=lambda r: r[1]["tiempo"]) if mejores_tiempos else None
-
-        return {
-            "Mejor ruta por costo (tipo, info)": mejor_por_costo,
-            "Mejor ruta por tiempo (tipo, info)": mejor_por_tiempo
-        }
+        return {"Mejor ruta por costo (tipo, info)": mejor_por_costo,"Mejor ruta por tiempo (tipo, info)": mejor_por_tiempo}
        
 
-#costo,tiempo=Planificador.evaluar_rutas_automotor("Zarate", "Mar_del_Plata",70000)
-#print(costo)
-#print(tiempo)
-
-
-
-
-
-
-
-# class Planificadorrr:
-
-#     @staticmethod
-#     def evaluar_rutas(origen, destino, peso_carga, vehiculos_disponibles):
-#         resultados = []
-
-#         for vehiculo in vehiculos_disponibles:
-#             rutas_encontradas = Planificador.encontrar_rutas(origen, destino, vehiculo.nombre.lower())
-
-#             for ruta in rutas_encontradas:
-#                 tipos_ok = True
-#                 for conexion in ruta:
-#                     if conexion.tipo.lower() not in vehiculo.nombre.lower():
-#                         tipos_ok = False
-#                     if conexion.restriccion == "velocidad maxima" and vehiculo.velocidad > conexion.valor_de_restriccion:
-#                         tipos_ok = False
-#                     if conexion.restriccion == "peso maximo" and peso_carga > conexion.valor_de_restriccion:
-#                         tipos_ok = False
-#                 if not tipos_ok:
-#                     continue
-
-#                 cantidad = math.ceil(peso_carga / vehiculo.capacidad)
-#                 distancia_total = sum(conexion.distancia for conexion in ruta)
-
-#                 if isinstance(vehiculo, Camion):
-#                     costo = vehiculo.calcular_costo(distancia_total, peso_carga)
-#                     tiempo = distancia_total / vehiculo.velocidad
-
-#                 elif isinstance(vehiculo, Tren):
-#                     costo = cantidad * vehiculo.calcular_costo(distancia_total, peso_carga)
-#                     tiempo = distancia_total / vehiculo.velocidad
-
-#                 elif isinstance(vehiculo, Barco):
-#                     tipo = ruta[0].tipo.lower()
-#                     costo = cantidad * vehiculo.calcular_costo(distancia_total, peso_carga, tipo=tipo)
-#                     tiempo = distancia_total / vehiculo.velocidad
-
-#                 elif isinstance(vehiculo, Avion):
-#                     tiempo = vehiculo.calcular_tiempo(distancia_total, prob_mal_tiempo=0.3)
-#                     costo = cantidad * vehiculo.calcular_costo(distancia_total, peso_carga)
-
-#                 resultados.append({
-#                     "ruta": ruta,
-#                     "vehiculo": vehiculo.nombre,
-#                     "costo": costo,
-#                     "tiempo": tiempo,
-#                     "cantidad_vehiculos": cantidad
-#                 })
-
-#         if resultados:
-#             mas_barata = min(resultados, key=lambda x: x["costo"])
-#             mas_rapida = min(resultados, key=lambda x: x["tiempo"])
-#             return mas_barata, mas_rapida
-#         else:
-#             return None, None
-
-
-        
             
