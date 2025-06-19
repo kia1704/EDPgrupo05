@@ -84,8 +84,7 @@ class Planificador:
            mejor_por_tiempo = None 
 
         return {"Mejor costo automotor":mejor_por_costo,
-                "Mejor tiempo automotor": mejor_por_tiempo }  #capaz me conviene ponerlo en una lista o similar para cuando comparo con los otros medios despues
-                                                                                            #Ademas aca estamos obteniendo unicamente el mejor costo y el mejor tiempo pero no las rutas enteras que tienen ese costo y ese tiempo
+                "Mejor tiempo automotor": mejor_por_tiempo }  
 
     
     
@@ -130,6 +129,7 @@ class Planificador:
             costo_ruta=0
             for conexion in ruta:
                 distancia_total += conexion.distancia
+
                 if conexion.restriccion != None:     #es necesario este if?
                     velocidad= min(int(conexion.valor_de_restriccion),tren.get_velocidad())
                     tiempo_total+= (conexion.distancia/velocidad)
@@ -200,10 +200,15 @@ class Planificador:
                 if valor is not None and "tiempo" in clave:
                     mejores_tiempo.append((tipo, valor))
 
-        mejor_por_costo = min(mejores_costo, key=lambda r: r[1]["costo"]) if mejores_costo else None
-        mejor_por_tiempo = min(mejores_tiempo, key=lambda r: r[1]["tiempo"]) if mejores_tiempo else None
+        if mejores_costo:
+            mejor_por_costo = min(mejores_costo, key=lambda r: r[1]["costo"]) 
+        else: 
+            None
+        if mejores_tiempo:
+            mejor_por_tiempo = min(mejores_tiempo, key=lambda r: r[1]["tiempo"]) 
+        else:
+            None
 
         return {"Mejor ruta por costo (tipo, info)": mejor_por_costo,"Mejor ruta por tiempo (tipo, info)": mejor_por_tiempo}
        
-
             
