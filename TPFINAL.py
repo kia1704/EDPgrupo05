@@ -1,5 +1,6 @@
 import math
 import random
+from abc import ABC , abstractmethod
 class Vehiculos:
     def __init__(self,nombre, velocidad, capacidad, costofijo, costoporkm, costoporkg):
         self.nombre = nombre
@@ -45,12 +46,11 @@ class Vehiculos:
     def set_costoporkg(self, costoporkg):
         self.costoporkg = costoporkg
 
-   
-    def calcular_costo(self, distancia, carga):
-        return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
+    @abstractmethod
+    def calcular_costo(self, distancia, carga):   
+        pass
 
-    def calcular_tiempo(self, distancia):
-        return distancia / self.velocidad
+    
 
 
 class Camion(Vehiculos):
@@ -90,8 +90,6 @@ class Tren (Vehiculos):
         costoporkm = self.get_costo_km(distancia)
         
         return self.costofijo + (costoporkm * distancia) 
-
-    
     
 
 
@@ -125,7 +123,7 @@ class Avion(Vehiculos):
     def determinar_clima(self, prob_mal_tiempo):
 
         #Retorna 'bueno' o 'malo' según la probabilidad de mal clima.
-        print(type(prob_mal_tiempo))
+        
         if random.random() > float(prob_mal_tiempo):
             return "bueno"
         else:
