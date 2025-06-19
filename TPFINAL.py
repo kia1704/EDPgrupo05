@@ -62,35 +62,36 @@ class Camion(Vehiculos):
     def get_costoporkg (self):
         raise Exception ("Invalid method")
     
-    def calcular_costo(self, distancia, carga, capacidad):
+    def calcular_costo(self, distancia, carga, tramos):
+        
         if carga < 15000:
             costo_kg = self.costo_kg[0]
         else:
             costo_kg = self.costo_kg[1]
 
-        cantidad = math.ceil(carga / capacidad)
-        costo=cantidad *(self.costofijo + (self.costoporkm * distancia) + (costo_kg*carga))
-
-        return costo,cantidad
+    
+        costo= (self.costofijo * tramos) + (self.costoporkm*distancia)+(costo_kg*carga)
+        return costo
 
     
               
 class Tren (Vehiculos):
     def __init__(self): 
-        self.costoporkm = [20, 15]
+        self.costo_km = [20, 15]
         super().__init__(nombre= "ferroviario", velocidad=100, capacidad=150000, costofijo=100, costoporkm=0, costoporkg=3)
 
-    def get_costoporkm(self, distancia):
+    def get_costo_km(self, distancia):
        if distancia < 200 :
-            return self.costoporkm[0] 
+            return self.costo_km[0] 
        else:
-           return self.costoporkm[1]
+           return self.costo_km[1]
        
-    def calcular_costo(self, distancia, carga):
-        costo_km = self.get_costoporkm(distancia)
+    def calcular_costo(self, distancia):
+        costoporkm = self.get_costo_km(distancia)
+        
+        return self.costofijo + (costoporkm * distancia) 
+    
 
-        return self.costofijo + costo_km * distancia + self.costoporkg * carga
-       
 
     
 
@@ -108,12 +109,10 @@ class Barco (Vehiculos):
        else:
            raise Exception ("Invalid parameter")
        
-    #def get_costopfijo(self):                          #porque esta esto aca 
-     #   #raise Exception ("Invalid method")
-    
-    def calcular_costo(self, distancia, carga, tipo):
+   
+    def calcular_costo(self, distancia,tipo):
         costo_fijo = self.get_costofijo(tipo)
-        return costo_fijo + self.costoporkm * distancia + self.costoporkg * carga
+        return costo_fijo + self.costoporkm * distancia 
 
 
 class Avion(Vehiculos):
@@ -122,21 +121,23 @@ class Avion(Vehiculos):
         super().__init__(nombre= "aereo", velocidad = None ,capacidad=5000,costofijo=750,costoporkm=40, costoporkg=10)
     
     def determinar_clima(self, prob_mal_tiempo):
-        """
-        Retorna 'bueno' o 'malo' según la probabilidad de mal clima.
-        """
-        if random.random() > prob_mal_tiempo:
+
+        #Retorna 'bueno' o 'malo' según la probabilidad de mal clima.
+        print(type(prob_mal_tiempo))
+        if random.random() > float(prob_mal_tiempo):
             return "bueno"
         else:
             return "malo"
 
     def get_velocidad(self, prob_mal_tiempo):
-        clima = self.determinar_clima(prob_mal_tiempo)
+        clima = self.determinar_clima(prob_mal_tiempo) 
+
         return self.velocidades[clima]
 
     def calcular_tiempo(self, distancia, prob_mal_tiempo):
         velocidad = self.get_velocidad(prob_mal_tiempo)
         return distancia / velocidad
 
-    def calcular_costo(self, distancia, carga):
-        return self.costofijo + self.costoporkm * distancia + self.costoporkg * carga
+    def calcular_costo(self, distancia):
+        return self.costofijo + self.costoporkm * distancia 
+
