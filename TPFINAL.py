@@ -91,8 +91,7 @@ class Tren (Vehiculos):
         
         return self.costofijo + (costoporkm * distancia) 
 
-    def get_costoporkm (self):
-        raise Exception ("Invalid method")
+    
     
 
 
