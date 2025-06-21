@@ -1,32 +1,81 @@
-#from conexion_nodos_solicitud import Nodos
-#from conexion_nodos_solicitud import Conexiones
 from LectorCSV2 import LectorCSV2
 from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
-from graficos import GraficadorRuta
+from graficos import graficar_puntos_tramos
 
-#falta generar las validaciones necesarias
-lector = LectorCSV2()
-lector.leer_csv("nodos.csv", "nodo")
-lector.leer_csv("conexiones.csv", "conexion")
-lector.leer_csv("solicitudes.csv", "solicitud")
+def main():
+    lector = LectorCSV2()
+    try:
+        lector.leer_csv("nodos.csv", "nodo")
+        lector.leer_csv("conexiones.csv", "conexion")
+        lector.leer_csv("solicitudes.csv", "solicitud")
+    except Exception as e:
+        print(f"Error al leer archivos CSV: {e}")
+        return
 
+    for solicitud in Solicitud.solicitudes_existentes.values():
+        print(f"\nProcesando solicitud: {solicitud}")
+        try:
+            resultado = Planificador.evaluar_mejores_rutas(solicitud.origen, solicitud.destino, solicitud.peso)
+        except Exception as e:
+            print(f"Error al planificar rutas para la solicitud {solicitud.id_carga}: {e}")
+            continue
 
+        print("Resultado de planificación:")
+        print(resultado)
 
-for solicitud in Solicitud.solicitudes_existentes.values():
+        mejor_ruta_costo = resultado.get("Mejor ruta por costo (tipo, info)")
+        mejor_ruta_tiempo = resultado.get("Mejor ruta por tiempo (tipo, info)")
+
+        if mejor_ruta_costo and mejor_ruta_costo[1]:
+            puntos_tiempo = mejor_ruta_costo[1].get("distancia vs tiempo", [])
+            puntos_costo = mejor_ruta_costo[1].get("distancia vs costo", [])
+            if puntos_tiempo:
+                graficar_puntos_tramos(
+                    puntos_tiempo,
+                    titulo=f"Distancia acumulada vs Tiempo acumulado (Mejor por costo) [{solicitud.id_carga}]",
+                    xlabel="Distancia acumulada [km]",
+                    ylabel="Tiempo acumulado [horas]",
+                    color='blue',
+                    marker='o'
+                )
+            if puntos_costo:
+                graficar_puntos_tramos(
+                    puntos_costo,
+                    titulo=f"Distancia acumulada vs Costo acumulado (Mejor por costo) [{solicitud.id_carga}]",
+                    xlabel="Distancia acumulada [km]",
+                    ylabel="Costo acumulado [$]",
+                    color='green',
+                    marker='s'
+                )
+        else:
+            print("No se encontró una ruta óptima por costo para graficar.")
+
+        if mejor_ruta_tiempo and mejor_ruta_tiempo[1]:
+            puntos_tiempo = mejor_ruta_tiempo[1].get("distancia vs tiempo", [])
+            puntos_costo = mejor_ruta_tiempo[1].get("distancia vs costo", [])
+            if puntos_tiempo:
+                graficar_puntos_tramos(
+                    puntos_tiempo,
+                    titulo=f"Distancia acumulada vs Tiempo acumulado (Mejor por tiempo) [{solicitud.id_carga}]",
+                    xlabel="Distancia acumulada [km]",
+                    ylabel="Tiempo acumulado [horas]",
+                    color='blue',
+                    marker='o'
+                )
+            if puntos_costo:
+                graficar_puntos_tramos(
+                    puntos_costo,
+                    titulo=f"Distancia acumulada vs Costo acumulado (Mejor por tiempo) [{solicitud.id_carga}]",
+                    xlabel="Distancia acumulada [km]",
+                    ylabel="Costo acumulado [$]",
+                    color='green',
+                    marker='s'
+                )
+        else:
+            print("No se encontró una ruta óptima por tiempo para graficar.")
+
+if __name__ == "__main__":
+    main()
     
-    resultado=Planificador.evaluar_mejores_rutas(solicitud.origen,solicitud.destino,solicitud.peso)
-    print(resultado)
-    mejor_ruta = resultado["Mejor ruta por costo (tipo, info)"]  # o por tiempo
-
-    if mejor_ruta:
-        ruta_info = mejor_ruta[1] 
-        graficador = GraficadorRuta(ruta_info)
-        graficador.graficar()
-    else:
-        print("No se encontró una ruta óptima para graficar.")
-
-
-
-
 
