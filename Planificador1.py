@@ -9,7 +9,26 @@ from TPFINAL import Camion, Tren, Barco, Avion
 
 class Planificador:  
     @staticmethod
+    def validar_nodo(nombre):
+        if nombre not in Nodos.nodos_existentes:
+            raise ValueError(f"El nodo '{nombre}' no existe en la red.")
+
+    @staticmethod
+    def validar_tipo_transporte(tipo):
+        if tipo.lower() not in ["automotor", "ferroviaria", "fluvial", "aerea"]:
+            raise ValueError(f"Tipo de transporte '{tipo}' no válido.")
+
+    @staticmethod
+    def validar_peso(peso):
+        if peso <= 0:
+            raise ValueError("El peso de carga debe ser positivo.")
+        
+    @staticmethod
     def encontrar_rutas(origen, destino, tipo_transporte, ruta_actual=None, nodos_visitados=None, rutas_encontradas=None):
+        Planificador.validar_nodo(origen)
+        Planificador.validar_nodo(destino)
+        Planificador.validar_tipo_transporte(tipo_transporte)
+
         if ruta_actual is None:
             ruta_actual = []
         if nodos_visitados is None:
@@ -28,7 +47,9 @@ class Planificador:
                         continue
                     if nodo_vecino in nodos_visitados:
                         continue
-
+                    if not isinstance(conexion, Conexiones):
+                        raise TypeError("Cada tramo de la ruta debe ser una instancia de Conexiones.")
+                    
                     ruta_actual.append(conexion)
 
                     Planificador.encontrar_rutas(nodo_vecino, destino, tipo_transporte, ruta_actual, nodos_visitados, rutas_encontradas)
@@ -54,12 +75,20 @@ class Planificador:
             distancia_total = 0
             peso_max = camion.capacidad  # Comienza con capacidad total del camión
             tramos=0
+            graf_c=[]
+            graf_t=[]
             for conexion in ruta:
                 distancia_total += conexion.distancia
                 tramos+=1
                     # Si hay una restricción de peso, se aplica para toda la ruta
                 if conexion.restriccion == "peso maximo":
                     peso_max = min(peso_max, conexion.valor_de_restriccion)
+                tiempo_tramo = conexion.distancia/camion.get_velocidad()
+                costo_tramo=camion.calcular_costo(conexion.distancia,peso_carga,1)            
+                dist_t=(conexion.distancia,tiempo_tramo)
+                dist_c= (conexion.distancia,costo_tramo)
+                graf_c.append(dist_c)
+                graf_t.append(dist_t)
             cantidad= math.ceil(peso_carga/peso_max)
             costo=0
             flag=True
@@ -74,7 +103,7 @@ class Planificador:
             tiempo=distancia_total/camion.get_velocidad()
 
             #chequear esta lista de dicc
-            resultados.append({"ruta": ruta, "cantidad": cantidad, "peso maximo utilizado": peso_max, "costo": costo,"tiempo":tiempo})
+            resultados.append({"ruta": ruta, "cantidad": cantidad, "peso maximo utilizado": peso_max, "costo": costo,"tiempo":tiempo, "distancia vs tiempo":graf_t, "distancia vs costo":graf_c})
 
         if resultados:
             mejor_por_costo = min(resultados, key=lambda r: r["costo"])
@@ -91,7 +120,8 @@ class Planificador:
     @staticmethod
     def evaluar_rutas_maritimo(origen, destino, peso_carga):
         resultados = []
-
+        graf_c=[]
+        graf_t=[]
         barco = Barco()
         rutas = Planificador.encontrar_rutas(origen, destino, "fluvial")
         cantidad=math.ceil(peso_carga/barco.capacidad)
@@ -100,11 +130,16 @@ class Planificador:
             costo_ruta=0
             for conexion in ruta:
                 distancia_total += conexion.distancia
-                costo_ruta+=barco.calcular_costo(conexion.distancia,conexion.valor_de_restriccion)
-
+                costo_tramo=barco.calcular_costo(conexion.distancia,conexion.valor_de_restriccion)
+                costo_ruta+=costo_tramo
+                tiempo_tramo=conexion.distancia/barco.get_velocidad()
+                dist_t=(conexion.distancia,tiempo_tramo)
+                dist_c= (conexion.distancia,costo_tramo)
+                graf_c.append(dist_c)
+                graf_t.append(dist_t)
             costo_peso=barco.get_costoporkg()*peso_carga
             tiempo=distancia_total/barco.get_velocidad()  #hay que hacer geters de esto para obtener
-            resultados.append({"ruta":ruta ,"cantidad":cantidad, "costo": costo_peso+(costo_ruta * cantidad) , "tiempo":tiempo})
+            resultados.append({"ruta":ruta ,"cantidad":cantidad, "costo": costo_peso+(costo_ruta * cantidad) , "tiempo":tiempo,"distancia vs tiempo":graf_t, "distancia vs costo":graf_c})
 
         if resultados:    
           mejor_por_costo = min(resultados, key=lambda r: r["costo"])
@@ -127,17 +162,26 @@ class Planificador:
             distancia_total = 0
             tiempo_total = 0
             costo_ruta=0
+            graf_c=[]
+            graf_t=[]
             for conexion in ruta:
                 distancia_total += conexion.distancia
 
-                if conexion.restriccion != None:     #es necesario este if?
+                if conexion.restriccion != None:     
                     velocidad= min(int(conexion.valor_de_restriccion),tren.get_velocidad())
-                    tiempo_total+= (conexion.distancia/velocidad)
+                    tiempo_tramo=(conexion.distancia/velocidad)
+                    tiempo_total+= tiempo_tramo
                 else:
-                    tiempo_total += (conexion.distancia / tren.get_velocidad())
-                costo_ruta+= tren.calcular_costo(conexion.distancia)
+                    tiempo_tramo= (conexion.distancia / tren.get_velocidad())
+                    tiempo_total += tiempo_tramo
+                costo_tramo= tren.calcular_costo(conexion.distancia)
+                costo_ruta+= costo_tramo
+                dist_c= (conexion.distancia,costo_tramo)
+                dist_t=(conexion.distancia,tiempo_tramo)
+                graf_c.append(dist_c)
+                graf_t.append(dist_t)
             costo_peso=(tren.get_costoporkg()*peso_carga)
-            resultados.append({"ruta":ruta, "cantidad":cantidad, "costo":costo_peso+(costo_ruta *cantidad), "tiempo":tiempo_total,"distancia recorrida":distancia_total})
+            resultados.append({"ruta":ruta, "cantidad":cantidad, "costo":costo_peso+(costo_ruta *cantidad), "tiempo":tiempo_total,"distancia recorrida":distancia_total, "distancia vs tiempo":graf_t, "distancia vs costo":graf_c})
         
         if resultados:
           mejor_por_costo = min(resultados, key=lambda r: r["costo"])
@@ -159,15 +203,21 @@ class Planificador:
         for ruta in rutas:
           distancia_total=0
           tiempo_total=0
-            
+          graf_c=[]
+          graf_t=[]
           for conexion in ruta:
             distancia_total += conexion.distancia
             velocidad= avion.get_velocidad(conexion.valor_de_restriccion)
-            tiempo_total += (conexion.distancia/velocidad)
-        
+            tiempo_tramo= (conexion.distancia/velocidad)
+            tiempo_total += tiempo_tramo
+            costo_tramo= avion.calcular_costo(conexion.distancia)
+            dist_c= (conexion.distancia,costo_tramo)
+            dist_t=(conexion.distancia,tiempo_tramo)
+            graf_c.append(dist_c)
+            graf_t.append(dist_t)
           costo_peso= avion.get_costoporkg()*peso_carga
           costo_total= avion.calcular_costo(distancia_total)
-          resultados.append({"ruta":ruta,"cantidad":cantidad, "costo":costo_peso+(costo_total *cantidad), "tiempo":tiempo_total,"velocidad":velocidad})
+          resultados.append({"ruta":ruta,"cantidad":cantidad, "costo":costo_peso+(costo_total *cantidad), "tiempo":tiempo_total,"velocidad":velocidad, "distancia vs tiempo":graf_t, "distancia vs costo":graf_c})
         
         if resultados:
           mejor_por_costo = min(resultados, key=lambda r: r["costo"])
