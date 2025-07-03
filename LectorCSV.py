@@ -31,17 +31,18 @@ class LectorCSV2:
                 Nodos.agregar_nodo(nodo)
             except Exception as e:
                 print(f"Nodo repetido: {nombre} - {e}")
-
-
-
-
+                
     def procesar_conexiones(self, lector):
         for row in lector:
             origen = Nodos.nodos_existentes.get(row['origen'])
             destino = Nodos.nodos_existentes.get(row['destino'])
-            if origen and destino: #se fija si ningunsea null
+            if origen and destino:  # se fija si ninguno sea null
                 tipo = row['tipo']
-                distancia = int(row['distancia_km']) #fijarse una excepcion 
+                try:
+                    distancia = int(row['distancia_km'])
+                except (ValueError, TypeError):
+                    print(f"Valor inválido para 'distancia_km': {row['distancia_km']}")
+                    continue
                 restriccion = row.get('restriccion') or None
                 valor = row.get('valor_restriccion') or None
                 if valor == "":
@@ -49,17 +50,20 @@ class LectorCSV2:
                 if restriccion == "":
                     restriccion = None
                 conexion = Conexiones(origen.nombre, destino.nombre, tipo, distancia, restriccion, valor)
-                #print(f"--> {conexion}")
-                #print(f"-----------")
-                origen.agregar_conexion(conexion,destino.nombre)
-                destino.agregar_conexion(conexion,origen.nombre)
+                origen.agregar_conexion(conexion, destino.nombre)
+                destino.agregar_conexion(conexion, origen.nombre)
             else:
                 print(f"No se encontró el nodo origen o destino: {row['origen']} → {row['destino']}")
+
 
     def procesar_solicitudes(self, lector):
         for fila in lector:
             id_carga = fila['id_carga']
-            peso = float(fila['peso_kg'])
+            try:
+                peso = float(fila['peso_kg'])
+            except (ValueError, TypeError):
+                print(f"Valor inválido para 'peso_kg': {fila['peso_kg']}")
+                continue
             origen = fila['origen']
             destino = fila['destino']
 
@@ -67,5 +71,6 @@ class LectorCSV2:
                 print(f"Nodo no encontrado en solicitud: {origen} → {destino}")
                 continue
 
-            solicitud = Solicitud(id_carga,peso,origen,destino)
+            solicitud = Solicitud(id_carga, peso, origen, destino)
             Solicitud.agregar_solicitud(solicitud)
+
