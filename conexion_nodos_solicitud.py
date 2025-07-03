@@ -70,7 +70,7 @@ class Conexiones:
     def validar_conexion(nodo_origen, nodo_destino, tipo, distancia, restriccion, valor_de_restriccion):
         if not nodo_origen or not nodo_destino:
             raise ValueError("El nodo de origen y destino no pueden ser vacíos.")
-        if tipo not in ["Automotor", "Ferroviaria", "Fluvial", "Aerea"]:
+        if tipo not in {"Automotor", "Ferroviaria", "Fluvial", "Aerea"}:
             raise ValueError("Tipo de conexión inválido.")
         if distancia <= 0:
             raise ValueError("La distancia debe ser positiva.")
@@ -82,10 +82,8 @@ class Conexiones:
 
     def __str__(self):
         return f"{self.tipo.upper()} entre {self.nodo_origen} y {self.nodo_destino} {self.distancia} km"
+ 
     
-
-
-
 class Solicitud:
     solicitudes_existentes = {}
 
@@ -95,6 +93,7 @@ class Solicitud:
         self.peso = peso
         self.origen = origen
         self.destino = destino
+        Solicitud.agregar_solicitud(self)
 
     @staticmethod
     def validar_solicitud(id_carga, peso, origen, destino):
@@ -113,12 +112,7 @@ class Solicitud:
     
     
     @classmethod
-    def agregar_solicitud (cls,solicitud):
+    def agregar_solicitud(cls, solicitud):
         if solicitud.id_carga in cls.solicitudes_existentes:
-            raise ValueError ("Este id ya existe")
-        cls.solicitudes_existentes[solicitud.id_carga]=solicitud
-
-
-
-
-
+            raise ValueError("Este id ya existe")
+        cls.solicitudes_existentes[solicitud.id_carga] = solicitud
