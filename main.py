@@ -1,7 +1,7 @@
-from LectorCSV2 import LectorCSV2
+from LectorCSV import LectorCSV2
 from conexion_nodos_solicitud import Solicitud
 from Planificador1 import Planificador
-from graficos import graficar_puntos_tramos
+from Graficos import graficar_puntos_tramos
 
 def main():
     lector = LectorCSV2()
@@ -9,6 +9,7 @@ def main():
         lector.leer_csv("nodos.csv", "nodo")
         lector.leer_csv("conexiones.csv", "conexion")
         lector.leer_csv("solicitudes.csv", "solicitud")
+
     except Exception as e:
         print(f"Error al leer archivos CSV: {e}")
         return
@@ -16,7 +17,7 @@ def main():
     for solicitud in Solicitud.solicitudes_existentes.values():
         print(f"\nProcesando solicitud: {solicitud}")
         try:
-            resultado = Planificador.evaluar_mejores_rutas(solicitud.origen, solicitud.destino, solicitud.peso)
+            resultado = Planificador.evaluar_rutas(solicitud.get_origen(), solicitud.get_destino(), solicitud.get_peso())
         except Exception as e:
             print(f"Error al planificar rutas para la solicitud {solicitud.id_carga}: {e}")
             continue
