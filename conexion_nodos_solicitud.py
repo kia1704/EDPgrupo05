@@ -1,10 +1,14 @@
+from abc import ABC, abstractmethod
+from TPFINAL import Camion, Tren, Barco, Avion
+import math
 class Nodos:
     nodos_existentes={}
-    def __init__(self,nombre ):
+    def __init__(self,nombre,costoTrasbordoKg):
         self.validar_nombre(nombre)
 
         self.nombre=nombre
         self.conexiones = {}
+        self.costoTrasbordoKg = costoTrasbordoKg
 
     def __repr__(self):
         return self.__str__()
@@ -27,6 +31,9 @@ class Nodos:
 
     def __hash__(self):
         return hash(self.nombre)
+
+    def trasbordo(self,peso_carga):
+        return peso_carga * self.costoTrasbordoKg
 
     @staticmethod
     def validar_nombre(nombre):
@@ -82,8 +89,123 @@ class Conexiones:
 
     def __str__(self):
         return f"{self.tipo.upper()} entre {self.nodo_origen} y {self.nodo_destino} {self.distancia} km"
- 
+
+    def get_distancia(self):
+        return self.distancia
     
+    @abstractmethod
+    def calcular_costo(self):
+        pass
+
+    @abstractmethod
+    def calcular_tiempo(self):
+        pass
+
+    def get_nodo_origen(self):
+        origen=Nodos.nodos_existentes[self.nodo_origen]
+        return origen
+    
+    def get_tipo(self):
+        return self.tipo
+    
+
+class Conexion_Automotor(Conexiones):
+
+    def __init__ (self, nodo_origen, nodo_destino,tipo, distancia, restriccion=None,valor_de_restriccion=None):
+        super().__init__(nodo_origen,nodo_destino,tipo,distancia, restriccion,valor_de_restriccion)
+        self.vehiculo= Camion()
+
+    def calcular_costo(self,peso_carga):
+        #camion=Camion()
+        peso_max= self.vehiculo.get_capacidad()
+        if self.restriccion is not None:
+            peso_max=min(peso_max, int(self.valor_de_restriccion))
+        cantidad=math.ceil(peso_carga/peso_max)
+        costo=0
+        flag=True 
+        while flag:
+            while flag:
+                if peso_carga_aux > peso_max:
+                    costo += self.vehiculo.calcular_costo(self.distancia,peso_max)#se podria sacar el tramos en la cuenta porque calculamos por conexion que es un solo tramo
+                    peso_carga_aux -= peso_max
+                else:
+                    costo += self.vehiculo.calcular_costo(self.distancia, peso_carga_aux)
+                    flag = False
+
+        return costo * cantidad
+    
+
+    def calcular_tiempo(self):
+        #camion=Camion()
+        tiempo= (self.distancia/self.vehiculo.get_velocidad())
+        return tiempo
+    
+
+class Conexion_Ferroviaria(Conexiones):
+    def __init__ (self, nodo_origen, nodo_destino,tipo, distancia, restriccion=None,valor_de_restriccion=None):
+        super().__init__(nodo_origen,nodo_destino,tipo,distancia, restriccion,valor_de_restriccion)
+        self.vehiculo= Tren()
+
+    def calcular_costo(self,peso_carga):
+        #tren=Tren()
+        cantidad=math.ceil(peso_carga/self.vehiculo.get_capacidad())
+        costo= self.vehiculo.calcular_costo(self.distancia)
+        costo_peso= peso_carga * self.vehiculo.get_costoporkg()
+        
+        return (costo * cantidad) + costo_peso 
+    
+    def calcular_tiempo(self):
+        #tren=Tren()
+        velocidad= self.vehiculo.get_velocidad()
+        if self.restriccion is not None:
+            velocidad= min(int(self.valor_de_restriccion),self.vehiculo.get_velocidad())
+        tiempo= self.distancia / velocidad
+
+        return tiempo
+    
+
+
+class Conexion_Fluvial(Conexiones):
+    def __init__ (self, nodo_origen, nodo_destino,tipo, distancia, restriccion=None,valor_de_restriccion=None):
+        super().__init__(nodo_origen,nodo_destino,tipo,distancia, restriccion,valor_de_restriccion)
+        self.vehiculo= Barco()
+
+    def calcular_costo(self,peso_carga):
+        #barco=Barco()
+        cantidad= math.ceil(peso_carga/self.vehiculo.get_capacidad())
+        costo=self.vehiculo.calcular_costo(self.distancia,self.valor_de_restriccion)
+        costo_peso= peso_carga * self.vehiculo.get_costoporkg()
+        
+        return (costo*cantidad) + costo_peso
+
+    def calcular_tiempo(self):
+        #barco=Barco()
+        tiempo= self.distancia / self.vehiculo.get_velocidad()
+
+        return tiempo
+    
+
+class Conexion_Aerea(Conexiones):
+    def __init__ (self, nodo_origen, nodo_destino,tipo, distancia, restriccion=None,valor_de_restriccion=None):
+        super().__init__(nodo_origen,nodo_destino,tipo,distancia, restriccion,valor_de_restriccion)
+        self.vehiculo= Avion()
+
+    def calcular_costo(self,peso_carga):
+        #avion=Avion()
+        cantidad= math.ceil(self.distancia/self.vehiculo.get_velocidad())
+        costo= self.vehiculo.calcular_costo(self.distancia)
+        costo_peso= self.vehiculo.get_costoporkg() * peso_carga
+
+        return (costo * cantidad) + costo_peso
+    
+    def calcular_tiempo(self):
+        #avion= Avion()
+        velocidad = self.vehiculo.get_velocidad(self.valor_de_restriccion)
+        tiempo= self.distancia / velocidad
+        
+        return tiempo
+
+
 class Solicitud:
     solicitudes_existentes = {}
 
@@ -116,3 +238,15 @@ class Solicitud:
         if solicitud.id_carga in cls.solicitudes_existentes:
             raise ValueError("Este id ya existe")
         cls.solicitudes_existentes[solicitud.id_carga] = solicitud
+
+    def get_origen(self):
+        return self.origen
+    
+    def get_destino(self):
+        return self.destino
+    
+    def get_peso(self):
+        return self.peso
+
+
+
