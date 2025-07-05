@@ -1,6 +1,6 @@
-#DEFINITIVO
+DEFINITIVO
 import csv
-from conexion_nodos_solicitud import Nodos, Conexiones, Solicitud
+from conexion_nodos_solicitud import Nodos, Conexion_Automotor, Conexion_Ferroviaria, Conexion_Fluvial, Conexion_Aerea, Solicitud
 
 class LectorCSV2:
     def leer_csv(self, archivo, tipo):
@@ -26,7 +26,8 @@ class LectorCSV2:
     def procesar_nodos(self, lector):
         for row in lector:
             nombre = row['nombre']
-            nodo = Nodos(nombre)
+            costoTrasbordoKg = row['costoTrasbordoKg']
+            nodo = Nodos(nombre, costoTrasbordoKg)
             try:
                 Nodos.agregar_nodo(nodo)
             except Exception as e:
@@ -49,9 +50,24 @@ class LectorCSV2:
                     valor = None
                 if restriccion == "":
                     restriccion = None
-                conexion = Conexiones(origen.nombre, destino.nombre, tipo, distancia, restriccion, valor)
+                    
+                if tipo == "Automotor":
+                    clase_conexion = Conexion_Automotor
+                elif tipo == "Ferroviaria":
+                    clase_conexion = Conexion_Ferroviaria
+                elif tipo == "Fluvial":
+                    clase_conexion = Conexion_Fluvial
+                elif tipo == "Aerea":
+                    clase_conexion = Conexion_Aerea
+                else:
+                    print(f"Tipo de conexión desconocido: {tipo}")
+                    continue
+
+                conexion = clase_conexion(origen.nombre, destino.nombre, tipo, distancia, restriccion, valor)
+                conexion2 = clase_conexion(destino.nombre, origen.nombre, tipo, distancia, restriccion, valor)
+
                 origen.agregar_conexion(conexion, destino.nombre)
-                destino.agregar_conexion(conexion, origen.nombre)
+                destino.agregar_conexion(conexion2, origen.nombre)
             else:
                 print(f"No se encontró el nodo origen o destino: {row['origen']} → {row['destino']}")
 
@@ -72,5 +88,5 @@ class LectorCSV2:
                 continue
 
             solicitud = Solicitud(id_carga, peso, origen, destino)
-            Solicitud.agregar_solicitud(solicitud)
+            
 
