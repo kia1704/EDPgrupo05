@@ -1,4 +1,3 @@
-#DEFINITIVO
 import matplotlib.pyplot as plt
 
 def graficar_puntos_tramos(puntos, titulo, xlabel, ylabel, color='blue', marker='o'):
@@ -10,13 +9,19 @@ def graficar_puntos_tramos(puntos, titulo, xlabel, ylabel, color='blue', marker=
     color: color de la curva
     marker: marcador de los puntos
     """
+    distancias = [0]
+    valores = [0]
+    suma_dist = 0
+    suma_valor = 0
+    
     from itertools import accumulate
     distancias = [0] + list(accumulate(map(lambda p: p[0], puntos)))
     valores = [0] + list(accumulate(map(lambda p: p[1], puntos)))
-    
+
+    plt.figure(figsize=(10, 5))
     plt.plot(distancias, valores, marker=marker, color=color)
     for x, y in zip(distancias[1:], valores[1:]):
-        plt.annotate(f'({x:.0f}, {y:.0f})', (x, y), textcoords='offset points', xytext=(0, 10), ha='center', fontsize=9)
+        plt.annotate(f"({x:.0f}, {y:.0f})", (x, y), textcoords="offset points", xytext=(0,10), ha='center', fontsize=9)
     plt.title(titulo)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
