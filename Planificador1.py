@@ -115,6 +115,7 @@ class Planificador:
 
         print("Resultado de planificación:")
         Planificador.mostrar_resultado_bonito(resultado,solicitud)
+        input("Presiona Enter para ver los gráficos de esta solicitud...")
         Planificador.graficar_resultados(resultado, solicitud)
 
     @staticmethod
