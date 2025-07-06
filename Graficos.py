@@ -1,3 +1,4 @@
+#DEFINITIVO
 import matplotlib.pyplot as plt
 
 def graficar_puntos_tramos(puntos, titulo, xlabel, ylabel, color='blue', marker='o'):
