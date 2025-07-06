@@ -6,14 +6,16 @@ from Planificador1 import Planificador
 def main():
     try:
         LectorCSV2.leer_todo()
+        for solicitud in Solicitud.solicitudes_existentes.values():
+            try:
+                Planificador.procesar_solicitud(solicitud)
+            except Exception as e:
+                print(f"Error al procesar la solicitud {solicitud.id_carga}: {e}")
     except Exception as e:
-        print(f"Error al leer archivos CSV: {e}")
-        return
-
-    for solicitud in Solicitud.solicitudes_existentes.values():
-        Planificador.procesar_solicitud(solicitud)
-
+        print(f"Error crítico: {e}")
+        
 if __name__ == "__main__":
     main()
+
 
 
