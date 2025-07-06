@@ -1,6 +1,13 @@
 # EDPgrupo05
 En este repositorio se encuentran todos los archivos que conforman el Trabajo Practico Final. Los siguientes son:
-- "main.py" donde se llaman a las funciones correspondientes para correr el programa de la forma correcta
-- "Cone
-En este repositorio hay gran cantidad de archivos pero unicamente forman parte del trabajo practico los que tienen como mensaje final "DEFINITIVO". 
-Debe asegurarse de que los archivos csv en donde se encuentran los nodos y conexiones que conforman su sistema y las solicitudes a procesar se encuentren dentro de la misma carpeta que los archivos que forman parte del trabajo practico.
+- "main.py" : Ejecuta el programa completo procesando solicitudes y mostrando resultados.
+- "LectorCSV.py" : El encargado de leer los archivos csv y cargar nodos, conexiones y solicitudes correspondientes.
+- "conexion_nodos_solicitud.py" : Define nodos, conexiones y solicitudes, y cómo se relacionan.
+- "Planificador1.py" : Planifica rutas posibles según costo y tiempo.
+- "Graficos.py" : Genera gráficos de costo y tiempo acumulado por ruta.
+- "TPFINAL.py": Define los vehículos que componen el sistema y sus caracteristicas
+
+IMPORTANTE: 
+Para que el programa funcione correctamente se debe crear el sistema de nodos y conexiones deseados por el usuario. Para esto debe asegurarse que los archivos csv en donde se enceuntra la informacion de los nodos, conexiones y de las solicitudes a procesar se encuentren en la misma carpeta que los archivos que componen el programa y que sus nombres sean: "nodos.csv", "conexiones.csv" y "solicitudes.csv" respectivamente.
+
+🚂🚛🚢✈️ A PLANIFICAR!!
