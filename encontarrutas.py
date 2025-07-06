@@ -56,3 +56,4 @@ class Planificador:
                 min(opciones_validas, key=lambda x: x["tiempo"])
             )
         return None, None
+
