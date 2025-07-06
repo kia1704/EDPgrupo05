@@ -8,7 +8,7 @@ class Nodos:
 
         self.nombre=nombre
         self.conexiones = {}
-        self.costoTrasbordoKg = costoTrasbordoKg
+        self.costoTrasbordoKg = float(costoTrasbordoKg)
 
     def __repr__(self):
         return self.__str__()
@@ -122,6 +122,7 @@ class Conexion_Automotor(Conexiones):
             peso_max=min(peso_max, int(self.valor_de_restriccion))
         cantidad=math.ceil(peso_carga/peso_max)
         costo=0
+        peso_carga_aux=peso_carga
         flag=True 
         while flag:
             while flag:
@@ -192,7 +193,7 @@ class Conexion_Aerea(Conexiones):
 
     def calcular_costo(self,peso_carga):
         #avion=Avion()
-        cantidad= math.ceil(self.distancia/self.vehiculo.get_velocidad())
+        cantidad= math.ceil(self.distancia/self.vehiculo.get_velocidad(self.valor_de_restriccion))
         costo= self.vehiculo.calcular_costo(self.distancia)
         costo_peso= self.vehiculo.get_costoporkg() * peso_carga
 
@@ -200,7 +201,7 @@ class Conexion_Aerea(Conexiones):
     
     def calcular_tiempo(self):
         #avion= Avion()
-        velocidad = self.vehiculo.get_velocidad(self.valor_de_restriccion)
+        velocidad= self.vehiculo.get_velocidad(self.valor_de_restriccion)
         tiempo= self.distancia / velocidad
         
         return tiempo
